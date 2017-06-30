@@ -82,13 +82,13 @@ public class ProjectCorpusParser {
 		descriptions.putAll(methodDescription);
 		ArrayList<String> list = new ArrayList<>(descriptions.keySet());
 		Collections.sort(list);
-		StringBuilder sbSource = new StringBuilder(), sbLocations = new StringBuilder();
+		StringBuilder sbDocs = new StringBuilder(), sbLocations = new StringBuilder();
 		for (String method : list) {
 			String description = descriptions.get(method);
-			sbSource.append(method + ": " + description + "\n");
+			sbDocs.append(method + ": " + description + "\n");
 			sbLocations.append(locations.get(method) + "\n");
 		}
-		FileIO.writeStringToFile(sbSource.toString(), outPath + "/source.txt");
+		FileIO.writeStringToFile(sbDocs.toString(), outPath + "/docs.txt");
 		FileIO.writeStringToFile(sbLocations.toString(), outPath + "/locations.txt");
 		return numOfSequences;
 	}
