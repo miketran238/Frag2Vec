@@ -73,12 +73,11 @@ public class Fragmentation {
 	public static Map<String,Map<String,Double>> result_map = new HashMap<>();
 	
 	public static void main(String[] args) throws Exception {
-
 		// Load training corpus
 
 //		String path = "/tutorial_javadoc_col_concatinate.txt";
 //				String path = "/collections_single.txt";
-				String path = "/tutorial_javadoc_col_combine2.txt";
+				String path = "/input/col_concatinate.txt";
 		//		String path = "/description+1.txt";
 		//		String path = "/description+2.txt";
 		//    	String path = "/tutorial_javadoc_col_full.txt";
@@ -103,7 +102,7 @@ public class Fragmentation {
 		ParagraphVectors vec = new ParagraphVectors.Builder()
 				.minWordFrequency(1) //change from 1 to 5
 				.iterations(5)	// change from 5 to 10
-				.epochs(20)		//Change from 20 to 1
+				.epochs(1)		//Change from 20 to 1
 				.layerSize(100) // change from 100 to 200
 				.learningRate(0.005) // change from 0.025 to 0.01
 				.labelsSource(source)
@@ -187,7 +186,7 @@ public class Fragmentation {
 		 * Value	= False (not relevant) or True (relevant)
 		*/
 //		Map<String,Boolean> oracle_map = new HashMap<>();
-		File file_oracle = new File ("resources/tutorial_col_oracle");
+		File file_oracle = new File ("resources/input/tutorial_col_oracle");
 		Scanner sc_oracle = new Scanner (file_oracle);
 		i = 0;
 		while(sc_oracle.hasNextLine()){
