@@ -31,6 +31,6 @@ public class ParallelCorpusParser {
 	
 	public static void main(String[] args) {
 		ParallelCorpusParser pcp = new ParallelCorpusParser("list.txt");
-		pcp.generateParallelCorpus("C:/Research/Projects", true, true);
+		pcp.generateParallelCorpus("C:\\Research\\Tutorial Project\\Projects", true, true);
 	}
 }
