@@ -16,8 +16,8 @@ public class ParallelCorpusParser {
 		Scanner sc = new Scanner(content);
 		while (sc.hasNextLine()) {
 			final String line = sc.nextLine();
-			String[] parts = line.split("[\\s]+");
-			final String name = parts[0], path = parts[1];
+			int index = line.indexOf(" ");
+			final String name = line.substring(0, index), path = line.substring(index+1);
 			new Thread(new Runnable() {
 				@Override
 				public void run() {
@@ -31,6 +31,6 @@ public class ParallelCorpusParser {
 	
 	public static void main(String[] args) {
 		ParallelCorpusParser pcp = new ParallelCorpusParser("list.txt");
-		pcp.generateParallelCorpus("T:/tutorials", true, true);
+		pcp.generateParallelCorpus("C:/Research/Projects", true, true);
 	}
 }

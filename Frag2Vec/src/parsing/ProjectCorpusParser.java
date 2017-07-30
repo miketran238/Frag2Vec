@@ -61,7 +61,6 @@ public class ProjectCorpusParser {
 		int numOfSequences = 0;
 		for (String rootPath : rootPaths) {
 			String[] sourcePaths = getSourcePaths(rootPath, new String[]{".java"}, recursive);
-			
 			@SuppressWarnings("rawtypes")
 			Map options = JavaCore.getOptions();
 			options.put(JavaCore.COMPILER_COMPLIANCE, JavaCore.VERSION_1_8);
