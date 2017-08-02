@@ -44,16 +44,16 @@ import java.util.stream.Collectors;
 public class Model_DOC2VEC_full {
 
 	
-	public final static int num_FragTutorial 	= 57; 
-	public final static int num_class 			= 31; 
-	public final static int num_relevant_pair 	= 56; 
+	public final static int num_FragTutorial 	= 69; 
+	public final static int num_class 			= 8; 
+	public final static int num_relevant_pair 	= 42; 
 
 	
 	public static Map<String,List<String>> training_map = new HashMap<>();
 	public static Map<String,Map<String,Double>> result_map = new HashMap<>();
 	
 	// Load training corpus
-	public final static String input_name = "col_concatinate";
+	public final static String input_name = "math3_concatinate";
 	public final static String model_name = input_name+"_DOC2VEC_FULL";
 	public static String path = "/"+ input_name + ".txt";
 	
@@ -62,8 +62,10 @@ public class Model_DOC2VEC_full {
 		/*
 		 *  Configure and Train Para2Vec
 		 */
-		ClassPathResource resource = new ClassPathResource("input"+path);
-		File file_training_corpus = resource.getFile();
+		//ClassPathResource resource = new ClassPathResource("C:\\Research\\Tutorial Project\\Frag2Vec\\Frag2Vec\\resources\\input"+path);
+		//File file_training_corpus = resource.getFile();
+//		File file_training_corpus = new File ("C:\\Research\\Tutorial Project\\Frag2Vec\\Frag2Vec\\resources\\input" + path);
+		File file_training_corpus = new File ("./resources/input" + path);
 		SentenceIterator iter = new BasicLineIterator(file_training_corpus);
 
 		AbstractCache<VocabWord> cache = new AbstractCache<>();
@@ -79,12 +81,12 @@ public class Model_DOC2VEC_full {
 				.minWordFrequency(1) //change from 1 to 5
 				.iterations(5)	// change from 5 to 10
 				.epochs(1)		//Change from 20 to 1
-				.layerSize(500) // change from 100 to 200
+				.layerSize(200) // change from 100 to 200
 				.learningRate(0.005) // change from 0.025 to 0.01
 				.labelsSource(source)
 				.windowSize(5) 	// change from 5 to 3
 				.iterate(iter)
-				.trainWordVectors(false) // change from false to true
+				.trainWordVectors(true) // change from false to true
 				.vocabCache(cache)
 				.tokenizerFactory(t)
 				.sampling(0)
