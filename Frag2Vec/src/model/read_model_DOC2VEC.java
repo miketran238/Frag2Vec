@@ -15,6 +15,7 @@ import java.util.Scanner;
 public class read_model_DOC2VEC {
 
 	public static Map<String,Boolean> oracle_map = new HashMap<>();
+	public static Map<String,Boolean> FRAPT_map = new HashMap<>();
 	public static Map<String,Map<String,Double>> result_map = new HashMap<>();
 
 	public static Map<String,Map<String,Double>> DOC2VEC_map = new HashMap<>();
@@ -22,23 +23,32 @@ public class read_model_DOC2VEC {
 
 	public final static int num_relevant_pair 	= 42; 
 	public final static int k_top = 10;
-	public final static String model_name = "math3_concatinate_DOC2VEC_FULL";
+	public final static String model_name = "col_concatinate_DOC2VEC_FULL";
 
-	public static void main(String args[]) throws IOException{
+	public static void main(String args[]) throws IOException
+	{
+		readDoc2VecModel();
+		readOracleResult();
+		readFrapt();
+		resultDoc2Vec();
+		resultFraptIn();
+	}
 
-		/*		
-		 * Initialize Log file
-		 */
-
-		File file_output1	= new File ("resources/output/result/"+model_name+"_Top_"+k_top+"_Accuracy");
-		FileWriter fWriter1	= new FileWriter (file_output1);
-		PrintWriter writer1	= new PrintWriter (fWriter1);
-
-		File file_output	= new File ("resources/output/result/"+model_name+"_Fscore");
-		FileWriter fWriter	= new FileWriter (file_output);
-		PrintWriter writer	= new PrintWriter (fWriter);
-		// *****************************************************************************
-
+	// Sort Map by Value
+	public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
+		return map.entrySet()
+				.stream()
+				.sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
+				.collect(Collectors.toMap(
+						Map.Entry::getKey, 
+						Map.Entry::getValue, 
+						(e1, e2) -> e1, 
+						LinkedHashMap::new
+						));
+	}
+	
+	public static void readDoc2VecModel() throws IOException
+	{
 		/*
 		 * Step 1: Read Model DOC2VEC file and Re-build API vector 
 		 * Name		= result_map
@@ -66,15 +76,17 @@ public class read_model_DOC2VEC {
 			sc_in.close();
 		}
 		sc.close();
-		// *****************************************************************************
-
+	}
+	
+	public static void readOracleResult() throws IOException
+	{
 		/*
 		 * Step 2:	Read Oracle file and build a Map
 		 * Name		= oracle_map
 		 * Key		= 0_Collections -> relation btw DOC_0 and class Collections 
 		 * Value	= False (not relevant) or True (relevant)
 		 */
-		File file_oracle = new File ("resources/input/tutorial_math_oracle");
+		File file_oracle = new File ("resources/input/tutorial_col_oracle");
 		Scanner sc_oracle = new Scanner (file_oracle);
 		int i = 0;
 		while(sc_oracle.hasNextLine()){
@@ -89,19 +101,46 @@ public class read_model_DOC2VEC {
 			line.close();
 		}
 		sc_oracle.close();
-		System.out.println("Total frag: " + i);
-		// *****************************************************************************
-
+	}
+	
+	public static void readFrapt() throws IOException
+	{
+		/*
+		 * Read FRAPT result
+		 */
+		File FRAPT_result = new File("resources/input/FRAPT_result_col.txt");
+		Scanner sc = new Scanner(FRAPT_result);
+		while(sc.hasNextLine()){
+			String s = sc.nextLine();
+			s = s.replace(":", "");
+			Scanner sc_in = new Scanner(s);
+			while (sc_in.hasNext()){
+				String DOC_ID = sc_in.next();
+				String class_name = sc_in.next();
+				int result = sc_in.nextInt();
+				String key = DOC_ID + "_" + class_name;
+				boolean value	= (result == 1) ? true : false;
+				FRAPT_map.put(key, value);
+			}
+			sc_in.close();
+		}
+		sc.close();
+	}
+	
+	public static void resultDoc2Vec() throws IOException
+	{
+		File file_output	= new File ("resources/output/result/"+model_name+"_Fscore");
+		FileWriter fWriter	= new FileWriter (file_output);
+		PrintWriter writer	= new PrintWriter (fWriter);
 		/*
 		 * Step 3: Precision & Recall & F1 with Threshold
 		 */
 		System.out.println("T\tPrecision\tRecall\tF\tTP");
 		for (int j = 0; j <= 100; j++){
-			int TP = 0;
-			int FP = 0;
-			int FN = 0;
-			int num_retrieve = 0;
+			int TP = 0, FP = 0, FN = 0;
 			double T = j * 0.01;
+			
+			//int num_retrieve = 0;
 			//			for (Entry<String,Map<String,Double>> entry : result_map.entrySet()){
 			//				String class_name = entry.getKey();
 			//				for (Entry<String,Double> entry_in : entry.getValue().entrySet()){
@@ -120,6 +159,7 @@ public class read_model_DOC2VEC {
 			//					}
 			//				}
 			//			}
+			
 			for( Entry<String, Boolean> entry: oracle_map.entrySet() )
 			{
 				int index = entry.getKey().indexOf("_");
@@ -155,22 +195,61 @@ public class read_model_DOC2VEC {
 //				}
 				
 			}
-			//			System.out.println("Total num " + num_retrieve + " TP " + TP + " FP " + FP);
 			//			double precision    = 100 * (double)TP / num_retrieve;
 			double precision 	= 100 * (double)TP / (TP+FP);
 			//			double recall 		= 100 * (double)TP / num_relevant_pair;
 			double recall    	= 100 * (double)TP / (TP+FN);
 			double F1			= 2 * precision * recall / (precision + recall);
+			
+
 			System.out.println(T+"\t"+precision+"\t"+recall + "\t" + F1 + "\t"+ TP);
 			writer.println(T+" "+precision+" "+recall+" "+F1);
+
 		}
 		// *****************************************************************************
 		writer.close();
 
+	}
+	
+	public static void resultFraptIn() throws IOException
+	{
+		int TPf = 0, FPf = 0, FNf = 0; //For FRAPT accuracy
+		for( Entry<String, Boolean> entry: oracle_map.entrySet() )
+		{
+			String className = entry.getKey().substring(entry.getKey().indexOf("_")+1);
 
+			if ( result_map.containsKey(className) )
+			{
+				boolean fraptResult = FRAPT_map.get(entry.getKey());
+				if ( entry.getValue() ) //Oracle say 1
+				{
+					if (fraptResult) TPf++; //Frapt say 1
+					else FPf++; 			//Frapt say 0
+				}
+				else						//Oracle say 0
+				{
+					if (fraptResult) FNf++; //Frapt say 1
+				}
+			}
+		}
+		double precisionF 	= 100 * (double)TPf / (TPf+FPf);
+		double recallF    	= 100 * (double)TPf / (TPf+FNf);
+		double F1F			= 2 * precisionF * recallF / (precisionF + recallF);
+		System.out.println("FRAPT result ------------------------");
+		System.out.println(precisionF+" "+recallF+" "+F1F);
+
+	}
+	public static void topK() throws IOException
+	{
 		/*
 		 * K-Accuracy
 		 */
+		/*		
+		 * Initialize Log file
+		 */
+		File file_output1	= new File ("resources/output/result/"+model_name+"_Top_"+k_top+"_Accuracy");
+		FileWriter fWriter1	= new FileWriter (file_output1);
+		PrintWriter writer1	= new PrintWriter (fWriter1);
 		double[] count_k = new double[k_top];	// Numerator Array
 		for (Entry<String, Map<String, Double>> entry : result_map.entrySet()){
 			//			System.out.println(entry.getKey());
@@ -207,21 +286,5 @@ public class read_model_DOC2VEC {
 		}
 		writer1.close();
 		// *****************************************************************************
-
-
 	}
-
-	// Sort Map by Value
-	public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
-		return map.entrySet()
-				.stream()
-				.sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
-				.collect(Collectors.toMap(
-						Map.Entry::getKey, 
-						Map.Entry::getValue, 
-						(e1, e2) -> e1, 
-						LinkedHashMap::new
-						));
-	}
-
 }
